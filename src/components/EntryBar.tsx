@@ -2,14 +2,30 @@ import { useState, useRef } from "react";
 import { Send, Camera, Loader2, X, Check, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { api, type ParsedEntry } from "@/lib/api";
+import { api } from "@/lib/api";
 import { toast } from "sonner";
+
+interface PreviewData {
+  entry_type: string;
+  meal_type?: string;
+  food_items?: Array<{
+    name: string;
+    quantity: number;
+    unit: string;
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+  }>;
+  weight_kg?: number;
+  amount_ml?: number;
+}
 
 export function EntryBar() {
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [preview, setPreview] = useState<ParsedEntry[] | null>(null);
+  const [preview, setPreview] = useState<PreviewData | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async () => {
@@ -18,16 +34,14 @@ export function EntryBar() {
     setLoading(true);
     try {
       if (photoPreview) {
-        // Photo goes direct — no preview step
         await api.parsePhoto(photoPreview);
         toast.success("Photo analyzed and logged!");
         setPhotoPreview(null);
         setText("");
         window.dispatchEvent(new Event("entry-logged"));
       } else {
-        // Text entry: show preview first
         const res = await api.previewEntry(text.trim());
-        setPreview(res.entries);
+        setPreview(res.data as PreviewData);
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to parse entry");
@@ -86,31 +100,33 @@ export function EntryBar() {
     <div className="fixed bottom-[calc(3.5rem+env(safe-area-inset-bottom))] left-0 right-0 z-40 border-t border-border bg-card/95 px-4 py-3 backdrop-blur-md">
       <div className="mx-auto max-w-lg">
         {/* Preview confirmation */}
-        {preview && preview.length > 0 && (
+        {preview && (
           <Card className="mb-3 border-primary/30 bg-accent/50">
             <CardContent className="p-3">
               <p className="mb-2 text-xs font-medium text-muted-foreground">
                 AI parsed your entry:
               </p>
               <div className="space-y-1.5">
-                {preview.map((entry, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center justify-between text-sm"
-                  >
+                {preview.entry_type === "meal" && preview.food_items?.map((item, i) => (
+                  <div key={i} className="flex items-center justify-between text-sm">
                     <span className="font-medium">
-                      {entry.entry_type === "weight"
-                        ? `Weight: ${entry.weight_kg}kg`
-                        : entry.entry_type === "water"
-                          ? `Water: ${entry.amount_ml}ml`
-                          : `${entry.name} (${entry.quantity} ${entry.unit})`}
+                      {item.name} ({item.quantity} {item.unit})
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      {entry.entry_type === "meal" &&
-                        `${entry.calories} cal · P${Math.round(entry.protein)}g C${Math.round(entry.carbs)}g F${Math.round(entry.fat)}g`}
+                      {item.calories} cal · P{Math.round(item.protein)}g C{Math.round(item.carbs)}g F{Math.round(item.fat)}g
                     </span>
                   </div>
                 ))}
+                {preview.entry_type === "weight" && (
+                  <div className="text-sm font-medium">
+                    Weight: {preview.weight_kg}kg
+                  </div>
+                )}
+                {preview.entry_type === "water" && (
+                  <div className="text-sm font-medium">
+                    Water: {preview.amount_ml}ml
+                  </div>
+                )}
               </div>
               <div className="mt-3 flex gap-2">
                 <Button

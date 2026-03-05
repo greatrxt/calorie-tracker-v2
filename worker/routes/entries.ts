@@ -23,35 +23,36 @@ entryRoutes.post("/text", async (c) => {
   return await saveEntry(c.env, userId, result, entry_text);
 });
 
-// Photo-based entry
+// Photo-based entry (accepts JSON with base64 data URL)
 entryRoutes.post("/photo", async (c) => {
   const userId = c.get("userId" as never) as number;
-  const formData = await c.req.formData();
-  const photo = formData.get("photo") as File | null;
-  const currentTime = (formData.get("current_time") as string) || new Date().toISOString();
+  const { image, current_time } = await c.req.json();
+  const currentTime = current_time || new Date().toISOString();
 
-  if (!photo) {
-    return c.json({ success: false, message: "Photo is required" }, 400);
+  if (!image) {
+    return c.json({ success: false, message: "Image is required" }, 400);
   }
 
-  // Convert to base64
-  const buffer = await photo.arrayBuffer();
-  const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
+  // Extract base64 from data URL (e.g. "data:image/jpeg;base64,/9j/...")
+  const base64Match = (image as string).match(/^data:([^;]+);base64,(.+)$/);
+  const mimeType = base64Match ? base64Match[1] : "image/jpeg";
+  const base64Data = base64Match ? base64Match[2] : image as string;
 
   // Parse with AI
-  const parsed = await parsePhotoWithAI(base64, currentTime, c.env);
+  const parsed = await parsePhotoWithAI(base64Data, currentTime, c.env);
   if (!parsed.success || !parsed.result) {
     return c.json({ success: false, message: parsed.message || "Failed to parse photo" }, 400);
   }
 
   // Store photo in R2
-  const photoKey = `meals/${userId}/${Date.now()}-${photo.name || "photo.jpg"}`;
+  const buffer = Uint8Array.from(atob(base64Data), (ch) => ch.charCodeAt(0));
+  const photoKey = `meals/${userId}/${Date.now()}-photo.jpg`;
   await c.env.R2.put(photoKey, buffer, {
-    httpMetadata: { contentType: photo.type || "image/jpeg" },
+    httpMetadata: { contentType: mimeType },
   });
 
   const result = parsed.result as Record<string, unknown>;
-  return await saveEntry(c.env, userId, result, `[Photo: ${photo.name}]`, photoKey);
+  return await saveEntry(c.env, userId, result, "[Photo]", photoKey);
 });
 
 // Preview endpoint - parse without saving

@@ -82,19 +82,19 @@ export const api = {
   parseText: (text: string) =>
     request<{ success: boolean; entries: ParsedEntry[] }>("/entries/text", {
       method: "POST",
-      body: JSON.stringify({ text }),
+      body: JSON.stringify({ entry_text: text, current_time: new Date().toISOString() }),
     }),
 
   parsePhoto: (base64: string) =>
     request<{ success: boolean; entries: ParsedEntry[] }>("/entries/photo", {
       method: "POST",
-      body: JSON.stringify({ image: base64 }),
+      body: JSON.stringify({ image: base64, current_time: new Date().toISOString() }),
     }),
 
   previewEntry: (text: string) =>
-    request<{ success: boolean; entries: ParsedEntry[] }>("/entries/preview", {
+    request<{ success: boolean; entries: ParsedEntry[]; data: unknown }>("/entries/preview", {
       method: "POST",
-      body: JSON.stringify({ text }),
+      body: JSON.stringify({ entry_text: text, current_time: new Date().toISOString() }),
     }),
 
   // Meals
