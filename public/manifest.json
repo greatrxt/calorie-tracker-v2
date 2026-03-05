@@ -1,0 +1,18 @@
+{
+  "name": "NourishAI - Smart Calorie Tracker",
+  "short_name": "NourishAI",
+  "description": "AI-powered calorie tracking. Just type what you ate.",
+  "start_url": "/today",
+  "display": "standalone",
+  "background_color": "#f8f6f2",
+  "theme_color": "#2d8a4e",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

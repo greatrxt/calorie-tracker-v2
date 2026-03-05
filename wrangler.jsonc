@@ -1,0 +1,29 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "calorie-tracker-v2",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-03-01",
+  "assets": {
+    "not_found_handling": "single-page-application"
+  },
+  "observability": {
+    "enabled": true
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "calorie_tracker_v2",
+      "database_id": "placeholder-replace-with-actual-id"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "R2",
+      "bucket_name": "calorie-tracker-photos"
+    }
+  ],
+  "vars": {
+    "GOOGLE_CLIENT_ID": "",
+    "GOOGLE_REDIRECT_URI": "http://localhost:8787/api/auth/google/callback"
+  }
+}
