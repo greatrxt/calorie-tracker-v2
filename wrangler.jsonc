@@ -13,7 +13,7 @@
     {
       "binding": "DB",
       "database_name": "calorie_tracker_v2",
-      "database_id": "placeholder-replace-with-actual-id"
+      "database_id": "96bd2f5b-3594-414b-99dd-dbe0cc4e453e"
     }
   ],
   "r2_buckets": [
