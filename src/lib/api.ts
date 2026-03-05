@@ -56,7 +56,7 @@ export const api = {
   login: (email: string, password: string) =>
     request<{ success: boolean; token: string }>("/auth/login", {
       method: "POST",
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ usernameOrEmail: email, password }),
     }),
 
   register: (username: string, email: string, password: string) =>

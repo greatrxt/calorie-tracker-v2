@@ -27,7 +27,12 @@ authRoutes.post("/register", async (c) => {
       "INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)"
     ).bind(username, email, `${saltB64}$${passwordHash}`).run();
 
-    return c.json({ success: true, message: "Registration successful" });
+    const user = await c.env.DB.prepare(
+      "SELECT id, username FROM users WHERE email = ?"
+    ).bind(email).first<{ id: number; username: string }>();
+
+    const token = await createJwt({ user_id: user!.id, username: user!.username }, c.env.JWT_SECRET);
+    return c.json({ success: true, token, username: user!.username });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";
     return c.json({ success: false, message: `Registration error: ${message}` }, 500);
