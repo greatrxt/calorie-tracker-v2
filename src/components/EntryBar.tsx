@@ -2,30 +2,14 @@ import { useState, useRef } from "react";
 import { Send, Camera, Loader2, X, Check, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { api } from "@/lib/api";
+import { api, type PreviewResult } from "@/lib/api";
 import { toast } from "sonner";
-
-interface PreviewData {
-  entry_type: string;
-  meal_type?: string;
-  food_items?: Array<{
-    name: string;
-    quantity: number;
-    unit: string;
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-  }>;
-  weight_kg?: number;
-  amount_ml?: number;
-}
 
 export function EntryBar() {
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [preview, setPreview] = useState<PreviewData | null>(null);
+  const [preview, setPreview] = useState<PreviewResult | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async () => {
@@ -41,7 +25,7 @@ export function EntryBar() {
         window.dispatchEvent(new Event("entry-logged"));
       } else {
         const res = await api.previewEntry(text.trim());
-        setPreview(res.data as PreviewData);
+        setPreview(res.data);
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to parse entry");

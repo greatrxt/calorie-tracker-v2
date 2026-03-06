@@ -66,7 +66,7 @@ export const api = {
     }),
 
   getGoogleAuthUrl: () =>
-    request<{ success: boolean; url: string }>("/auth/google"),
+    request<{ url: string }>("/auth/google"),
 
   // User
   getProfile: () =>
@@ -80,19 +80,19 @@ export const api = {
 
   // Entries (AI parsing)
   parseText: (text: string) =>
-    request<{ success: boolean; entries: ParsedEntry[] }>("/entries/text", {
+    request<{ success: boolean; message: string; data: unknown }>("/entries/text", {
       method: "POST",
       body: JSON.stringify({ entry_text: text, current_time: new Date().toISOString() }),
     }),
 
   parsePhoto: (base64: string) =>
-    request<{ success: boolean; entries: ParsedEntry[] }>("/entries/photo", {
+    request<{ success: boolean; message: string; data: unknown }>("/entries/photo", {
       method: "POST",
       body: JSON.stringify({ image: base64, current_time: new Date().toISOString() }),
     }),
 
   previewEntry: (text: string) =>
-    request<{ success: boolean; entries: ParsedEntry[]; data: unknown }>("/entries/preview", {
+    request<{ success: boolean; data: PreviewResult }>("/entries/preview", {
       method: "POST",
       body: JSON.stringify({ entry_text: text, current_time: new Date().toISOString() }),
     }),
@@ -241,6 +241,23 @@ export interface DashboardStats {
   unit_preference: string;
   daily_calories: { day: string; total: number }[];
   weight_history: { weight_kg: number; day: string }[];
+}
+
+export interface PreviewResult {
+  entry_type: string;
+  meal_type?: string;
+  food_items?: Array<{
+    name: string;
+    quantity: number;
+    unit: string;
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+  }>;
+  weight_kg?: number;
+  amount_ml?: number;
+  suggested_time?: string;
 }
 
 export interface Favorite {
